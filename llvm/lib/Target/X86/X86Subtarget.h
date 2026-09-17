@@ -360,6 +360,13 @@ public:
     // This convention allows using the SysV convention on Windows targets.
     case CallingConv::X86_64_SysV:
       return false;
+    // GraalVM's convention differs from the C one only in reserving two registers
+    // (see X86RegisterInfo::getReservedRegs), so on Win64 it is the Win64 convention.
+    // Falling through to the default answer below would keep the argument registers
+    // but drop the 32-byte home space, so a C caller and a GraalVM callee with more
+    // than four arguments disagree about where the fifth argument lives.
+    case CallingConv::GRAAL:
+      return isTargetWin64();
     // Otherwise, who knows what this is.
     default:
       return false;
